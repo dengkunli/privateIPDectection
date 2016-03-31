@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>WebSocket Test</title>
+<script language="javascript" type="text/javascript">
+
+    var wsUri = "wss://echo.websocket.org/";
+    var output;
+
+    function init()
+    {
+        //output = document.getElementById("output");
+        //testWebSocket();
+        //var ws = new WebSocket('ws://10.188.12.222:12345');
+        var start_time = new Date();
+        var ws = new WebSocket('ws://10.188.12.222:10000');
+        ws.onopen = function(e) {
+            console.log('reached');
+        };
+        ws.onerror = function(e) {
+            console.log('error');
+        };
+        ws.onclose = function (e) {
+            console.log('closed');
+        };
+        setTimeout(function() {
+            console.log(ws.readyState);
+            if (ws.readyState < 2) {
+                console.log(ws.url);
+                ws.close();
+            }
+            else {
+                var end_time = new Date();
+                console.log('found');
+                console.log(end_time - start_time);
+            }
+        },2000);
+    }
+
+    function init3() {
+        wsTest([10,188,0,2], '3000');
+    }
+
+    function wsTest(ip, port) {
+        var ws = new WebSocket('ws://' + ip.join('.') + ':' + port);
+        setTimeout(function () {
+            if (ws.readyState < 2) {
+                console.log(ws.url + ' is not what we want');
+                ws.close();
+                if ( nextIp(ip) ) {
+                    wsTest(ip, port);
+                }
+            }
+            else {
+                console.log(ws.url + ' LOCAL ADDR FOUND');
+            }
+        }, 5);
+    }
+
+    function nextIp(ip) {
+        if (ip[3] === 255) {
+            if (ip[2] === 255) {
+                return false;
+            }
+            else {
+                ip[3] = 1;
+                ip[2]++;
+                return true;
+            }
+        }
+        else {
+            ip[3]++;
+            return true;
+        }
+    }
+
+    function initXHR() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState >= 2) {
+                console.log('found' + this.url);
+            }
+        }
+    }
+
+    function testWebSocket()
+    {
+        websocket = new WebSocket(wsUri);
+        websocket.onopen = function(evt) { onOpen(evt) };
+        websocket.onclose = function(evt) { onClose(evt) };
+        websocket.onmessage = function(evt) { onMessage(evt) };
+        websocket.onerror = function(evt) { onError(evt) };
+    }
+
+    function onOpen(evt)
+    {
+        writeToScreen("CONNECTED");
+        doSend("WebSocket rocks");
+    }
+
+    function onClose(evt)
+    {
+        writeToScreen("DISCONNECTED");
+    }
+
+    function onMessage(evt)
+    {
+        writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+        websocket.close();
+    }
+
+    function onError(evt)
+    {
+        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+    }
+
+    function doSend(message)
+    {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+    }
+
+    function writeToScreen(message)
+    {
+        var pre = document.createElement("p");
+        pre.style.wordWrap = "break-word";
+        pre.innerHTML = message;
+        output.appendChild(pre);
+    }
+
+    window.addEventListener("load", init, false);
+
+</script>
+
+<h2>WebSocket Test</h2>
+
+<div id="output"></div>
